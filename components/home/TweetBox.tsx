@@ -2,7 +2,9 @@ import { BsCardImage, BsEmojiSmile } from 'react-icons/bs'
 import { RiFileGifLine, RiBarChartHorizontalFill } from 'react-icons/ri'
 import { IoMdCalendar } from 'react-icons/io'
 import { MdOutlineLocationOn } from 'react-icons/md'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
+import { client } from '../../lib/client'
+import { TwitterContext } from '../../context/TwitterContext'
 
 const style = {
   wrapper: `px-4 flex flex-row border-b border-[#38444d] pb-4`,
@@ -20,10 +22,44 @@ const style = {
 
 const TweetBox = () => {
   const [tweetMessage, setTweetMessage] = useState('')
+  const { currentAccount, fetchTweets, currentUser } =
+    useContext(TwitterContext)
 
-  const postTweet = (e: any) => {
-    e.preventDefault()
-    console.log(tweetMessage)
+  console.log(currentAccount)
+  const postTweet = async (event: any) => {
+    event.preventDefault()
+
+    if (!tweetMessage) return
+
+    const tweetId = `${currentAccount}_${Date.now()}`
+
+    const tweetDoc = {
+      _type: 'tweets',
+      _id: tweetId,
+      tweet: tweetMessage,
+      timestamp: new Date(Date.now()).toISOString(),
+      author: {
+        _key: tweetId,
+        _type: 'reference',
+        _ref: currentAccount,
+      },
+    }
+
+    await client.createIfNotExists(tweetDoc)
+
+    await client
+      .patch(currentAccount)
+      .setIfMissing({ tweets: [] })
+      .insert('after', 'tweets[-1]', [
+        {
+          _key: tweetId,
+          _ref: tweetId,
+          _type: 'reference',
+        },
+      ])
+      .commit()
+
+    await fetchTweets()
     setTweetMessage('')
   }
 
@@ -31,7 +67,7 @@ const TweetBox = () => {
     <div className={style.wrapper}>
       <div className={style.tweetBoxLeft}>
         <img
-          src="https://pbs.twimg.com/profile_images/1488910999537451008/mZ0U2W3W_400x400.png"
+          src={currentUser.profileImage}
           alt="Profile Image"
           className={style.profileImage}
         />

@@ -1,4 +1,6 @@
+import { useContext } from 'react'
 import { BsStars } from 'react-icons/bs'
+import { TwitterContext } from '../../context/TwitterContext'
 import Post from '../Post'
 import TweetBox from './TweetBox'
 
@@ -8,55 +10,21 @@ const style = {
   headerTitle: `text-xl font-bold`,
 }
 
-const tweets = [
-  {
-    displayName: 'sameem.eth',
-    userName: '0x1279eEB25eEc3C63a903BD30AbD6Cc51450A8069',
-    avatar:
-      'https://pbs.twimg.com/profile_images/1488910999537451008/mZ0U2W3W_400x400.png',
-    text: 'gm',
-    isProfileImageNft: true,
-    timestamp: '2021-06-01T00:00:00.000Z',
-  },
-  {
-    displayName: 'sameem.eth',
-    userName: '0x1279eEB25eEc3C63a903BD30AbD6Cc51450A8069',
-    avatar:
-      'https://pbs.twimg.com/profile_images/1488910999537451008/mZ0U2W3W_400x400.png',
-    text: 'gm',
-    isProfileImageNft: true,
-    timestamp: '2021-06-01T00:00:00.000Z',
-  },
-  {
-    displayName: 'sameem.eth',
-    userName: '0x1279eEB25eEc3C63a903BD30AbD6Cc51450A8069',
-    avatar:
-      'https://pbs.twimg.com/profile_images/1488910999537451008/mZ0U2W3W_400x400.png',
-    text: 'gm',
-    isProfileImageNft: true,
-    timestamp: '2021-06-01T00:00:00.000Z',
-  },
-  {
-    displayName: 'sameem.eth',
-    userName: '0x1279eEB25eEc3C63a903BD30AbD6Cc51450A8069',
-    avatar:
-      'https://pbs.twimg.com/profile_images/1488910999537451008/mZ0U2W3W_400x400.png',
-    text: 'gm',
-    isProfileImageNft: true,
-    timestamp: '2021-06-01T00:00:00.000Z',
-  },
-  {
-    displayName: 'sameem.eth',
-    userName: '0x1279eEB25eEc3C63a903BD30AbD6Cc51450A8069',
-    avatar:
-      'https://pbs.twimg.com/profile_images/1488910999537451008/mZ0U2W3W_400x400.png',
-    text: 'gm',
-    isProfileImageNft: true,
-    timestamp: '2021-06-01T00:00:00.000Z',
-  },
-]
+interface TweetAuthor {
+  name: string
+  walletAddress: string
+  profileImage: string
+  isProfileImageNft: boolean
+}
+interface Tweet {
+  author: TweetAuthor
+  tweet: string
+  timestamp: string
+}
 
 const Feed = () => {
+  const { tweets } = useContext(TwitterContext)
+
   return (
     <div className={style.wrapper}>
       <div className={style.header}>
@@ -64,17 +32,25 @@ const Feed = () => {
         <BsStars />
       </div>
       <TweetBox />
-      {tweets.map((tweet, i) => (
+      {tweets.map((tweet: Tweet, i: number) => (
         // <div>{tweet.displayName}</div>
         <Post
           key={i}
-          displayName={tweet.displayName}
-          username={`${tweet.userName.slice(0, 4)}...${tweet.userName.slice(
-            -4
-          )}`}
-          avatar={tweet.avatar}
-          text={tweet.text}
-          isProfileImageNft={tweet.isProfileImageNft}
+          displayName={
+            tweet.author.name === 'Unnamed'
+              ? `${tweet.author.walletAddress.slice(
+                  0,
+                  4
+                )}...${tweet.author.walletAddress.slice(41)}`
+              : tweet.author.name
+          }
+          username={`${tweet.author.walletAddress.slice(
+            0,
+            4
+          )}...${tweet.author.walletAddress.slice(-4)}`}
+          avatar={tweet.author.profileImage}
+          text={tweet.tweet}
+          isProfileImageNft={tweet.author.isProfileImageNft}
           timestamp={tweet.timestamp}
         />
       ))}
